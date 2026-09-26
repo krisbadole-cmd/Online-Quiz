@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Structures Smart Quiz</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#0f172a,#1e293b,#312e81);min-height:100vh;color:white;padding:20px}
+.container{max-width:850px;margin:auto}
+.header{text-align:center;margin-bottom:20px}.header h1{font-size:32px;margin-bottom:8px}.header p{color:#cbd5e1}
+.top-bar{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.1);padding:15px 20px;border-radius:15px;margin-bottom:15px}
+.timer{font-weight:bold;color:#facc15}
+.progress-container{width:100%;height:8px;background:#334155;border-radius:10px;margin-bottom:20px}.progress{height:100%;width:0%;background:#22c55e;border-radius:10px;transition:.3s}
+.question-card{background:rgba(255,255,255,.1);backdrop-filter:blur(12px);padding:25px;margin-bottom:18px;border-radius:18px;border:1px solid rgba(255,255,255,.15)}
+.question-card h3{margin-bottom:18px}
+.option{display:block;background:rgba(255,255,255,.08);padding:13px;margin:10px 0;border-radius:10px;cursor:pointer;transition:.3s}.option:hover{background:rgba(255,255,255,.18)}.option input{margin-right:10px}
+button{border:none;padding:13px 22px;border-radius:10px;cursor:pointer;font-weight:bold;margin:5px;transition:.3s}button:hover{transform:translateY(-2px);opacity:.9}
+.submit-btn{background:#22c55e;color:white}.answer-btn{background:#6366f1;color:white}.restart-btn{background:#f59e0b;color:white}
+.result,.explanation-page{display:none;text-align:center;background:rgba(255,255,255,.1);padding:35px;border-radius:20px;margin-top:20px}
+.score{font-size:42px;font-weight:bold;margin:15px}.performance{font-size:24px;margin:10px}.feedback{color:#cbd5e1;margin-bottom:20px}
+.answer-key{display:none;margin-top:20px;text-align:left}.answer-item{background:rgba(255,255,255,.08);padding:15px;margin:12px 0;border-radius:12px}.correct{border-left:5px solid #22c55e}.wrong{border-left:5px solid #ef4444}
+.status{font-weight:bold;margin-top:8px}.correct-text{color:#22c55e}.wrong-text{color:#ef4444}
+.explain-btn{background:#f59e0b;color:white;margin-top:12px}.next-btn{background:#6366f1;color:white}.back-btn{background:#64748b;color:white}
+.explanation-box{text-align:left;background:rgba(255,255,255,.08);padding:22px;border-radius:15px;margin:20px 0;line-height:1.7}
+.explanation-box h3{margin-bottom:15px}.explanation-box p{color:#e2e8f0;margin:8px 0}
+@media(max-width:600px){.header h1{font-size:25px}.top-bar{font-size:14px}.question-card{padding:18px}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+<h1>🧠 Data Structures Smart Quiz</h1>
+<p>Test your Data Structures knowledge</p>
+</div>
+
+<div id="quizSection">
+<div class="top-bar">
+<span id="questionCounter">Question 1 of 6</span>
+<span class="timer">⏱ Time: <span id="time">30</span>s</span>
+</div>
+<div class="progress-container"><div class="progress" id="progress"></div></div>
+<form id="quizForm"></form>
+<div style="text-align:center"><button class="submit-btn" type="button" onclick="submitQuiz()">Submit Quiz</button></div>
+</div>
+
+<div class="result" id="result">
+<h2>🎯 Quiz Completed!</h2>
+<div class="score" id="score"></div>
+<div id="percentage"></div>
+<div class="performance" id="performance"></div>
+<p class="feedback" id="feedback"></p>
+<button class="answer-btn" onclick="showAnswerKey()">📋 View Answer Key</button>
+<button class="restart-btn" onclick="restartQuiz()">🔄 Restart Quiz</button>
+<div class="answer-key" id="answerKey">
+<h2>📚 Answer Key</h2>
+<p style="color:#cbd5e1;margin:8px 0 15px">For an incorrect answer, click “Explain Answer” to understand the concept.</p>
+<div id="answerList"></div>
+</div>
+</div>
+
+<div class="explanation-page" id="explanationPage">
+<h2>📖 Answer Explanation</h2>
+<div class="explanation-box">
+<h3 id="explainQuestion"></h3>
+<p><b>Your Answer:</b> <span id="explainUserAnswer"></span></p>
+<p><b>Correct Answer:</b> <span id="explainCorrectAnswer"></span></p>
+<hr style="border:0;border-top:1px solid rgba(255,255,255,.2);margin:15px 0">
+<p><b>💡 Explanation:</b></p>
+<p id="explainText"></p>
+</div>
+<button class="back-btn" onclick="backToAnswerKey()">← Back to Answer Key</button>
+<button class="next-btn" onclick="nextExplanation()">Next Explanation →</button>
+</div>
+
+</div>
+
+<script>
+const questionBank=[
+{question:"Which data structure follows LIFO principle?",options:["Queue","Stack","Array","Tree"],answer:"Stack",explanation:"Stack follows LIFO, which means Last In, First Out. The element inserted last is removed first."},
+{question:"Which data structure follows FIFO principle?",options:["Stack","Tree","Queue","Graph"],answer:"Queue",explanation:"Queue follows FIFO, which means First In, First Out. The element inserted first is removed first."},
+{question:"Which data structure stores elements in continuous memory locations?",options:["Array","Stack","Graph","Tree"],answer:"Array",explanation:"An array stores elements in contiguous memory locations, allowing fast access using an index."},
+{question:"Which data structure consists of nodes connected using links?",options:["Array","Linked List","Stack","Queue"],answer:"Linked List",explanation:"A linked list consists of nodes. Each node contains data and a link or pointer to another node."},
+{question:"Which data structure is used to represent hierarchical relationships?",options:["Tree","Array","Stack","Queue"],answer:"Tree",explanation:"A tree represents hierarchical relationships using a root node, parent nodes and child nodes."},
+{question:"Which data structure is commonly used to represent networks?",options:["Stack","Graph","Array","Queue"],answer:"Graph",explanation:"A graph represents networks using vertices (nodes) and edges (connections), such as roads or social networks."},
+{question:"Which operation adds an element to a stack?",options:["Pop","Push","Delete","Search"],answer:"Push",explanation:"Push is the stack operation used to insert or add an element to the top of the stack."},
+{question:"Which operation removes an element from a stack?",options:["Push","Insert","Pop","Sort"],answer:"Pop",explanation:"Pop removes the top element from a stack. It follows the LIFO principle."},
+{question:"Which operation adds an element to a queue?",options:["Enqueue","Dequeue","Pop","Push"],answer:"Enqueue",explanation:"Enqueue is the operation used to add an element at the rear of a queue."},
+{question:"Which operation removes an element from a queue?",options:["Push","Enqueue","Dequeue","Insert"],answer:"Dequeue",explanation:"Dequeue removes an element from the front of a queue. Queue follows FIFO."},
+{question:"Which data structure uses nodes containing data and a link?",options:["Array","Linked List","Stack","Queue"],answer:"Linked List",explanation:"Each linked-list node stores data and a link or pointer that connects it to another node."},
+{question:"Which algorithm is used to arrange elements in order?",options:["Searching","Sorting","Traversal","Insertion"],answer:"Sorting",explanation:"Sorting algorithms arrange data in a particular order, such as ascending or descending order."},
+{question:"Which search algorithm works efficiently on sorted data?",options:["Linear Search","Binary Search","Bubble Sort","DFS"],answer:"Binary Search",explanation:"Binary Search works on sorted data by repeatedly dividing the search range into two halves."},
+{question:"Which sorting algorithm repeatedly compares adjacent elements?",options:["Binary Sort","Bubble Sort","Merge Sort","Quick Search"],answer:"Bubble Sort",explanation:"Bubble Sort repeatedly compares adjacent elements and swaps them when they are in the wrong order."},
+{question:"Which data structure is commonly used in recursion?",options:["Stack","Queue","Graph","Array"],answer:"Stack",explanation:"Recursion uses the call stack to keep track of function calls and return to previous calls."},
+{question:"Which traversal visits the root before its subtrees?",options:["Inorder","Postorder","Preorder","Levelorder"],answer:"Preorder",explanation:"Preorder traversal follows Root → Left → Right, so the root is visited before its subtrees."},
+{question:"Which traversal visits the root between left and right subtrees?",options:["Inorder","Preorder","Postorder","Levelorder"],answer:"Inorder",explanation:"Inorder traversal follows Left → Root → Right, so the root is visited between the two subtrees."},
+{question:"Which traversal visits the root after its subtrees?",options:["Preorder","Inorder","Postorder","Levelorder"],answer:"Postorder",explanation:"Postorder traversal follows Left → Right → Root, so the root is visited after its subtrees."},
+{question:"What is the first node of a linked list called?",options:["Tail","Head","Root","Parent"],answer:"Head",explanation:"The first node of a linked list is called the head. It provides the starting point of the list."},
+{question:"What is the last node of a linked list commonly called?",options:["Head","Root","Tail","Parent"],answer:"Tail",explanation:"The last node of a linked list is commonly called the tail. Its next link is usually null."},
+{question:"Which data structure is best suited for undo operations?",options:["Queue","Stack","Graph","Tree"],answer:"Stack",explanation:"Undo operations commonly use a stack because the most recent action should be undone first."},
+{question:"Which data structure is commonly used for printer scheduling?",options:["Stack","Queue","Tree","Graph"],answer:"Queue",explanation:"A printer queue commonly follows FIFO, so print jobs are processed in the order they were added."},
+{question:"Which structure has a root node and child nodes?",options:["Queue","Tree","Stack","Array"],answer:"Tree",explanation:"A tree has a root node and can have child nodes connected in a hierarchical structure."},
+{question:"Which data structure contains vertices and edges?",options:["Graph","Stack","Queue","Array"],answer:"Graph",explanation:"A graph is made up of vertices (nodes) and edges (connections) between those vertices."}
+];
+
+let currentQuestions=[],userAnswers=[],timer,timeLeft=30;
+let explanationIndex=0;
+
+function shuffle(array){return array.sort(()=>Math.random()-0.5)}
+
+function createQuiz(){
+clearInterval(timer);timeLeft=30;document.getElementById("time").innerText=timeLeft;
+currentQuestions=shuffle([...questionBank]).slice(0,6);userAnswers=[];
+const form=document.getElementById("quizForm");form.innerHTML="";
+currentQuestions.forEach((q,index)=>{
+let html=`<div class="question-card"><h3>${index+1}. ${q.question}</h3>`;
+shuffle([...q.options]).forEach(option=>{
+html+=`<label class="option"><input type="radio" name="q${index}" value="${option}" onchange="updateProgress()"> ${option}</label>`;
+});
+html+="</div>";form.innerHTML+=html;
+});
+document.getElementById("quizSection").style.display="block";
+document.getElementById("result").style.display="none";
+document.getElementById("explanationPage").style.display="none";
+updateProgress();startTimer();
+}
+
+function startTimer(){
+timer=setInterval(()=>{timeLeft--;document.getElementById("time").innerText=timeLeft;if(timeLeft<=0){clearInterval(timer);submitQuiz()}},1000);
+}
+
+function updateProgress(){
+let answered=0;
+for(let i=0;i<6;i++)if(document.querySelector(`input[name="q${i}"]:checked`))answered++;
+document.getElementById("progress").style.width=(answered/6*100)+"%";
+}
+
+function submitQuiz(){
+clearInterval(timer);let score=0;userAnswers=[];
+currentQuestions.forEach((q,index)=>{
+const selected=document.querySelector(`input[name="q${index}"]:checked`);
+let answer=selected?selected.value:"Not Answered";userAnswers.push(answer);
+if(answer===q.answer)score++;
+});
+const percentage=Math.round((score/6)*100);
+let performance="",feedback="";
+if(percentage===100){performance="🏆 Excellent Performance!";feedback="Perfect score! Your Data Structures concepts are excellent."}
+else if(percentage>=80){performance="🌟 Brilliant Performance!";feedback="Great work! Your concepts are very strong."}
+else if(percentage>=60){performance="👍 Good Performance!";feedback="Good job! A little more practice will make you stronger."}
+else if(percentage>=40){performance="📖 Keep Improving!";feedback="You have basic understanding. Practice more questions."}
+else{performance="🚀 Learning in Progress!";feedback="Don't worry. Revise the concepts and try the quiz again."}
+document.getElementById("score").innerText=`${score} / 6`;
+document.getElementById("percentage").innerText=`Percentage: ${percentage}%`;
+document.getElementById("performance").innerText=performance;
+document.getElementById("feedback").innerText=feedback;
+document.getElementById("quizSection").style.display="none";
+document.getElementById("result").style.display="block";
+}
+
+function showAnswerKey(){
+const answerList=document.getElementById("answerList");answerList.innerHTML="";
+currentQuestions.forEach((q,index)=>{
+const userAnswer=userAnswers[index],isCorrect=userAnswer===q.answer;
+const div=document.createElement("div");div.className="answer-item "+(isCorrect?"correct":"wrong");
+div.innerHTML=`<strong>${index+1}. ${q.question}</strong>
+<p>Your Answer: <b>${userAnswer}</b></p>
+<p>Correct Answer: <b>${q.answer}</b></p>
+<div class="status ${isCorrect?"correct-text":"wrong-text"}">${isCorrect?"✓ Correct":"✗ Incorrect"}</div>
+${!isCorrect?`<button class="explain-btn" onclick="showExplanation(${index})">🔍 Explain Answer</button>`:""}`;
+answerList.appendChild(div);
+});
+document.getElementById("answerKey").style.display="block";
+}
+
+function showExplanation(index){
+explanationIndex=index;
+const q=currentQuestions[index];
+document.getElementById("explainQuestion").innerText=q.question;
+document.getElementById("explainUserAnswer").innerText=userAnswers[index];
+document.getElementById("explainCorrectAnswer").innerText=q.answer;
+document.getElementById("explainText").innerText=q.explanation;
+document.getElementById("result").style.display="none";
+document.getElementById("explanationPage").style.display="block";
+}
+
+function backToAnswerKey(){
+document.getElementById("explanationPage").style.display="none";
+document.getElementById("result").style.display="block";
+document.getElementById("answerKey").style.display="block";
+}
+
+function nextExplanation(){
+let next=-1;
+for(let i=explanationIndex+1;i<currentQuestions.length;i++){
+if(userAnswers[i]!==currentQuestions[i].answer){next=i;break}
+}
+if(next!==-1){showExplanation(next)}
+else{backToAnswerKey();alert("You have viewed all available explanations!")}
+}
+
+function restartQuiz(){createQuiz()}
+createQuiz();
+</script>
+</body>
+</html>
